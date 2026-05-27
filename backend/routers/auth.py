@@ -12,7 +12,7 @@ router = APIRouter()
 @router.post("/login", response_model=TokenOut)
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(Usuario).filter(Usuario.email == data.email).first()
-    if not user or not verify_password(data.password, user.password):
+    if not user or not verify_password(data.password[:72], user.password):
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
     if not user.activo:
         raise HTTPException(status_code=403, detail="Usuario desactivado")
