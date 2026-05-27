@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>POS Licorería Fusagasugá</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f11;
+    --surface: #18181c;
+    --surface2: #222228;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0f0f2;
+    --text2: #9898a8;
+    --text3: #55556a;
+    --accent: #f0b429;
+    --accent2: #d4980e;
+    --green: #34d399;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+  #app { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  #sidebar {
+    width: 220px; min-width: 220px; background: var(--surface);
+    border-right: 1px solid var(--border); display: flex; flex-direction: column;
+    padding: 0; position: sticky; top: 0; height: 100vh;
+  }
+  .logo {
+    padding: 20px 20px 16px; border-bottom: 1px solid var(--border);
+  }
+  .logo-title { font-size: 15px; font-weight: 600; color: var(--accent); letter-spacing: -.3px; }
+  .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+    border-radius: var(--radius-sm); cursor: pointer; color: var(--text2);
+    font-size: 13px; font-weight: 400; transition: all .15s; border: none;
+    background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(240,180,41,0.12); color: var(--accent); font-weight: 500; }
+  .nav-icon { font-size: 16px; width: 18px; text-align: center; }
+  .nav-divider { height: 1px; background: var(--border); margin: 8px 0; }
+  .user-section {
+    padding: 14px 16px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(240,180,41,0.18); display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: var(--accent);
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--text3); }
+  .logout-btn {
+    margin-left: auto; background: none; border: none; cursor: pointer;
+    color: var(--text3); font-size: 16px; padding: 4px; border-radius: 4px;
+  }
+  .logout-btn:hover { color: var(--red); }
+
+  /* Main */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar {
+    padding: 16px 28px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 16px; background: var(--surface);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .topbar h1 { font-size: 16px; font-weight: 600; flex: 1; }
+  .content { flex: 1; padding: 28px; overflow-y: auto; }
+
+  /* Cards */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .card-sm { padding: 14px 18px; }
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 14px; margin-bottom: 24px; }
+  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+  .metric-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 8px; }
+  .metric-value { font-size: 26px; font-weight: 600; font-family: 'DM Mono', monospace; }
+  .metric-value.accent { color: var(--accent); }
+  .metric-value.green { color: var(--green); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.blue { color: var(--blue); }
+
+  /* Botones */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+    border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all .15s; border: none; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-primary { background: var(--accent); color: #0f0f11; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-danger { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .btn-danger:hover { background: rgba(248,113,113,0.2); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-icon { padding: 6px 8px; }
+
+  /* Tablas */
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; }
+  th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 500; color: var(--text3);
+       text-transform: uppercase; letter-spacing: .7px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text2); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Badges */
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .badge-green { background: rgba(52,211,153,0.12); color: var(--green); }
+  .badge-red { background: rgba(248,113,113,0.12); color: var(--red); }
+  .badge-amber { background: rgba(240,180,41,0.12); color: var(--accent); }
+  .badge-blue { background: rgba(96,165,250,0.12); color: var(--blue); }
+
+  /* Forms */
+  input, select, textarea {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; width: 100%;
+    transition: border .15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--accent);
+  }
+  label { display: block; font-size: 12px; color: var(--text3); margin-bottom: 5px; }
+  .form-group { margin-bottom: 14px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* POS */
+  .pos-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; height: calc(100vh - 140px); }
+  .productos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; overflow-y: auto; content-visibility: auto; }
+  .producto-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px; cursor: pointer;
+    transition: all .15s; user-select: none;
+  }
+  .producto-card:hover { border-color: var(--accent); background: var(--surface2); }
+  .producto-card:active { transform: scale(.97); }
+  .producto-card.sin-stock { opacity: .4; cursor: not-allowed; }
+  .prod-nombre { font-size: 13px; font-weight: 500; line-height: 1.3; margin-bottom: 6px; }
+  .prod-precio { font-size: 15px; font-weight: 600; color: var(--accent); font-family: 'DM Mono', monospace; }
+  .prod-stock { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  /* Carrito */
+  .carrito-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden;
+  }
+  .carrito-header { padding: 14px 16px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; }
+  .carrito-items { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .carrito-item {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 12px;
+  }
+  .item-nombre { flex: 1; font-size: 12px; line-height: 1.3; }
+  .item-qty { display: flex; align-items: center; gap: 6px; }
+  .qty-btn {
+    width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border2);
+    background: var(--surface); color: var(--text); cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .qty-num { font-size: 13px; font-weight: 600; min-width: 18px; text-align: center; font-family: 'DM Mono', monospace; }
+  .item-subtotal { font-size: 12px; font-weight: 500; color: var(--accent); min-width: 72px; text-align: right; font-family: 'DM Mono', monospace; }
+  .carrito-footer { padding: 14px 16px; border-top: 1px solid var(--border); }
+  .carrito-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .total-label { font-size: 13px; color: var(--text2); }
+  .total-value { font-size: 22px; font-weight: 700; color: var(--accent); font-family: 'DM Mono', monospace; }
+  .empty-cart { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text3); gap: 8px; }
+
+  /* Login */
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); }
+  .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 40px; width: 380px; }
+  .login-logo { font-size: 22px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  .login-sub { color: var(--text3); font-size: 13px; margin-bottom: 28px; }
+
+  /* Modales */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    display: flex; align-items: center; justify-content: center; z-index: 100;
+  }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 28px; width: 480px; max-width: 95vw;
+  }
+  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+  /* Alerts */
+  .alert { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 14px; }
+  .alert-error { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .alert-success { background: rgba(52,211,153,0.1); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+
+  /* Searchbar */
+  .searchbar { position: relative; }
+  .searchbar input { padding-left: 34px; }
+  .searchbar::before { content: '🔍'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; pointer-events: none; }
+
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .page-title { font-size: 18px; font-weight: 600; }
+
+  .mono { font-family: 'DM Mono', monospace; }
+  .text-right { text-align: right; }
+  .hidden { display: none !important; }
+  .flex { display: flex; }
+  .gap-8 { gap: 8px; }
+  .mt-8 { margin-top: 8px; }
+  select option { background: var(--surface2); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ============================================================
+// ESTADO GLOBAL
+// ============================================================
+const API = 'http://localhost:8000';
+
+const state = {
+  user: null,
+  token: null,
+  page: 'login',
+  productos: [],
+  categorias: [],
+  ventas: [],
+  carrito: [],
+  dashboard: null,
+  loading: false,
+  error: null,
+  success: null,
+  busqueda: '',
+  modalProducto: null,
+  modalNuevoProducto: false,
+  modalNuevoUsuario: false,
+  usuarios: [],
+};
+
+function getApiBase() {
+  return window.__API_URL__ || API;
+}
+
+async function api(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
+  const res = await fetch(getApiBase() + path, { ...options, headers: { ...headers, ...(options.headers || {}) } });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Error desconocido' }));
+    throw new Error(err.detail || 'Error en la petición');
+  }
+  return res.json();
+}
+
+function fmt(n) {
+  return '$' + Number(n).toLocaleString('es-CO');
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  const app = document.getElementById('app');
+  if (!state.user) { app.innerHTML = renderLogin(); bindLogin(); return; }
+  app.innerHTML = renderLayout();
+  bindLayout();
+  renderPage();
+}
+
+function renderLogin() {
+  return `<div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">🍾 POS Licorería</div>
+      <div class="login-sub">Sistema de ventas e inventario · Fusagasugá</div>
+      ${state.error ? `<div class="alert alert-error">${state.error}</div>` : ''}
+      <div class="form-group"><label>Correo electrónico</label><input id="l-email" type="email" placeholder="admin@licoreria.com" value="admin@licoreria.com"/></div>
+      <div class="form-group"><label>Contraseña</label><input id="l-pass" type="password" placeholder="••••••••" value="admin123"/></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:6px" onclick="doLogin()">Ingresar al sistema</button>
+      <div style="margin-top:14px;font-size:11px;color:var(--text3);text-align:center">Admin: admin@licoreria.com / admin123<br>Cajero: cajero@licoreria.com / cajero123</div>
+    </div>
+  </div>`;
+}
+
+function renderLayout() {
+  const isAdmin = state.user?.rol === 'admin';
+  const pages = [
+    { id: 'pos', icon: '🛒', label: 'Punto de venta', all: true },
+    { id: 'dashboard', icon: '📊', label: 'Dashboard', admin: true },
+    { id: 'inventario', icon: '📦', label: 'Inventario', admin: true },
+    { id: 'ventas', icon: '🧾', label: 'Ventas', admin: true },
+    { id: 'usuarios', icon: '👥', label: 'Usuarios', admin: true },
+  ];
+  const initials = state.user.nombre.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+  return `
+    <div id="sidebar">
+      <div class="logo">
+        <div class="logo-title">🍾 POS Licorería</div>
+        <div class="logo-sub">Fusagasugá, Cundinamarca</div>
+      </div>
+      <nav class="nav">
+        ${pages.filter(p => p.all || (p.admin && isAdmin)).map(p => `
+          <button class="nav-item ${state.page === p.id ? 'active' : ''}" onclick="goTo('${p.id}')">
+            <span class="nav-icon">${p.icon}</span>${p.label}
+          </button>`).join('')}
+      </nav>
+      <div class="user-section">
+        <div class="user-avatar">${initials}</div>
+        <div>
+          <div class="user-name">${state.user.nombre.split(' ')[0]}</div>
+          <div class="user-role">${state.user.rol === 'admin' ? 'Administrador' : 'Cajero'}</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="Cerrar sesión">⎋</button>
+      </div>
+    </div>
+    <div id="main">
+      <div class="topbar">
+        <h1 id="page-title">Cargando...</h1>
+        <div id="topbar-actions"></div>
+      </div>
+      <div class="content" id="content"></div>
+    </div>
+    ${state.modalProducto !== null ? renderModalProducto() : ''}
+    ${state.modalNuevoProducto ? renderModalNuevoProducto() : ''}
+    ${state.modalNuevoUsuario ? renderModalNuevoUsuario() : ''}
+  `;
+}
+
+function renderPage() {
+  const titles = { pos: 'Punto de venta', dashboard: 'Dashboard', inventario: 'Inventario', ventas: 'Historial de ventas', usuarios: 'Usuarios' };
+  document.getElementById('page-title').textContent = titles[state.page] || '';
+  const content = document.getElementById('content');
+  const actions = document.getElementById('topbar-actions');
+  if (state.page === 'pos') renderPOS(content, actions);
+  else if (state.page === 'dashboard') renderDashboard(content, actions);
+  else if (state.page === 'inventario') renderInventario(content, actions);
+  else if (state.page === 'ventas') renderVentas(content, actions);
+  else if (state.page === 'usuarios') renderUsuarios(content, actions);
+}
+
+// ============================================================
+// POS
+// ============================================================
+function renderPOS(content, actions) {
+  const productos = state.productos.filter(p =>
+    !state.busqueda || p.nombre.toLowerCase().includes(state.busqueda.toLowerCase())
+  );
+  const totalCarrito = state.carrito.reduce((s, i) => s + i.subtotal, 0);
+
+  actions.innerHTML = `<div class="searchbar" style="width:240px"><input id="pos-search" placeholder="Buscar producto..." value="${state.busqueda}" oninput="state.busqueda=this.value;renderPage()"/></div>`;
+
+  content.innerHTML = `
+    <div class="pos-layout">
+      <div>
+        <div class="productos-grid" id="prod-grid">
+          ${productos.map(p => `
+            <div class="producto-card ${p.stock === 0 ? 'sin-stock' : ''}" onclick="${p.stock > 0 ? `addToCart(${p.id})` : ''}">
+              <div class="prod-nombre">${p.nombre}</div>
+              <div class="prod-precio">${fmt(p.precio_venta)}</div>
+              <div class="prod-stock">Stock: ${p.stock}</div>
+            </div>`).join('') || '<div style="color:var(--text3);padding:20px">Sin productos</div>'}
+        </div>
+      </div>
+      <div class="carrito-panel">
+        <div class="carrito-header">🛒 Carrito <span style="color:var(--text3);font-weight:400;font-size:12px">(${state.carrito.length} ítems)</span></div>
+        <div class="carrito-items">
+          ${state.carrito.length === 0 ? '<div class="empty-cart"><span style="font-size:32px">🛒</span><span>Agrega productos al carrito</span></div>' :
+            state.carrito.map(item => `
+              <div class="carrito-item">
+                <div class="item-nombre">${item.nombre}</div>
+                <div class="item-qty">
+                  <button class="qty-btn" onclick="updateQty(${item.id}, -1)">−</button>
+                  <span class="qty-num">${item.cantidad}</span>
+                  <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+                </div>
+                <div class="item-subtotal">${fmt(item.subtotal)}</div>
+              </div>`).join('')}
+        </div>
+        <div class="carrito-footer">
+          <div class="carrito-total">
+            <span class="total-label">Total</span>
+            <span class="total-value">${fmt(totalCarrito)}</span>
+          </div>
+          <div class="form-group">
+            <label>Método de pago</label>
+            <select id="metodo-pago">
+              <option value="efectivo">💵 Efectivo</option>
+              <option value="tarjeta">💳 Tarjeta</option>
+              <option value="transferencia">📱 Transferencia</option>
+            </select>
+          </div>
+          ${state.error ? `<div class="alert alert-error">${state.error}</div>` : ''}
+          ${state.success ? `<div class="alert alert-success">${state.success}</div>` : ''}
+          <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:14px;padding:10px" onclick="cobrar()" ${state.carrito.length === 0 ? 'disabled style="opacity:.4"' : ''}>
+            Cobrar ${fmt(totalCarrito)}
+          </button>
+          ${state.carrito.length > 0 ? `<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:6px;font-size:12px" onclick="state.carrito=[];state.error=null;state.success=null;renderPage()">Vaciar carrito</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function addToCart(id) {
+  const p = state.productos.find(x => x.id === id);
+  if (!p) return;
+  const existing = state.carrito.find(x => x.id === id);
+  const maxQty = p.stock;
+  if (existing) {
+    if (existing.cantidad >= maxQty) { mostrarError(`Stock máximo: ${maxQty}`); return; }
+    existing.cantidad++;
+    existing.subtotal = existing.cantidad * existing.precio;
+  } else {
+    state.carrito.push({ id: p.id, nombre: p.nombre, precio: p.precio_venta, cantidad: 1, subtotal: p.precio_venta });
+  }
+  state.error = null; state.success = null;
+  renderPage();
+}
+
+function updateQty(id, delta) {
+  const idx = state.carrito.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  state.carrito[idx].cantidad += delta;
+  if (state.carrito[idx].cantidad <= 0) state.carrito.splice(idx, 1);
+  else state.carrito[idx].subtotal = state.carrito[idx].cantidad * state.carrito[idx].precio;
+  renderPage();
+}
+
+async function cobrar() {
+  if (state.carrito.length === 0) return;
+  const metodo = document.getElementById('metodo-pago')?.value || 'efectivo';
+  try {
+    const venta = await api('/ventas/', {
+      method: 'POST',
+      body: JSON.stringify({
+        detalles: state.carrito.map(i => ({ producto_id: i.id, cantidad: i.cantidad })),
+        metodo_pago: metodo
+      })
+    });
+    state.success = `✅ Venta #${venta.id} registrada · Total: ${fmt(venta.total)}`;
+    state.carrito = [];
+    state.error = null;
+    await loadProductos();
+    renderPage();
+  } catch(e) {
+    state.error = e.message;
+    renderPage();
+  }
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function renderDashboard(content, actions) {
+  content.innerHTML = '<div style="color:var(--text3);padding:20px">Cargando métricas...</div>';
+  try {
+    const d = await api('/reportes/dashboard');
+    content.innerHTML = `
+      <div class="metric-grid">
+        <div class="metric"><div class="metric-label">Ventas del día</div><div class="metric-value accent">${fmt(d.total_ventas_hoy)}</div></div>
+        <div class="metric"><div class="metric-label">Transacciones</div><div class="metric-value blue">${d.num_transacciones}</div></div>
+        <div class="metric"><div class="metric-label">Stock bajo</div><div class="metric-value ${d.productos_bajo_stock > 0 ? 'red' : 'green'}">${d.productos_bajo_stock}</div></div>
+        <div class="metric"><div class="metric-label">Total productos</div><div class="metric-value">${d.total_productos}</div></div>
+      </div>
+      <div class="card">
+        <div style="font-weight:600;margin-bottom:14px;font-size:14px">🏆 Top 5 productos del día</div>
+        ${d.top_productos.length === 0 ? '<div style="color:var(--text3)">Sin ventas hoy todavía</div>' :
+          `<div class="table-wrap"><table>
+            <thead><tr><th>Producto</th><th class="text-right">Unidades</th><th class="text-right">Ingresos</th></tr></thead>
+            <tbody>
+            ${d.top_productos.map((p,i) => `
+              <tr>
+                <td>${['🥇','🥈','🥉','4.','5.'][i]} ${p.nombre}</td>
+                <td class="text-right mono">${p.total_vendido}</td>
+                <td class="text-right mono">${fmt(p.total_ingresos)}</td>
+              </tr>`).join('')}
+            </tbody></table></div>`}
+      </div>`;
+  } catch(e) {
+    content.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+// ============================================================
+// INVENTARIO
+// ============================================================
+function renderInventario(content, actions) {
+  actions.innerHTML = `<button class="btn btn-primary" onclick="state.modalNuevoProducto=true;render()">+ Nuevo producto</button>`;
+  const prod = state.productos.filter(p =>
+    !state.busqueda || p.nombre.toLowerCase().includes(state.busqueda.toLowerCase())
+  );
+  content.innerHTML = `
+    <div class="page-header">
+      <div class="searchbar" style="width:280px"><input placeholder="Buscar producto..." oninput="state.busqueda=this.value;renderPage()" value="${state.busqueda}"/></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Producto</th><th>Categoría</th><th class="text-right">Precio venta</th><th class="text-right">Precio costo</th><th class="text-right">Stock</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          ${prod.map(p => {
+            const cat = state.categorias.find(c => c.id === p.categoria_id);
+            const stockBajo = p.stock <= p.stock_minimo;
+            return `<tr>
+              <td style="font-weight:500;color:var(--text)">${p.nombre}</td>
+              <td>${cat ? `<span class="badge badge-blue">${cat.nombre}</span>` : '—'}</td>
+              <td class="text-right mono">${fmt(p.precio_venta)}</td>
+              <td class="text-right mono">${fmt(p.precio_costo)}</td>
+              <td class="text-right mono ${stockBajo ? 'red' : ''}" style="${stockBajo ? 'color:var(--red);font-weight:600' : ''}">${p.stock}</td>
+              <td>${stockBajo ? '<span class="badge badge-red">⚠ Stock bajo</span>' : '<span class="badge badge-green">OK</span>'}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="state.modalProducto=${p.id};render()">Editar</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderModalNuevoProducto() {
+  return `<div class="modal-overlay" onclick="if(event.target===this){state.modalNuevoProducto=false;render()}">
+    <div class="modal">
+      <div class="modal-title">Nuevo producto</div>
+      ${state.error ? `<div class="alert alert-error">${state.error}</div>` : ''}
+      <div class="form-group"><label>Nombre *</label><input id="np-nombre" placeholder="Ej. Aguardiente Nectar 750ml"/></div>
+      <div class="form-row">
+        <div class="form-group"><label>Precio venta *</label><input id="np-pventa" type="number" placeholder="28000"/></div>
+        <div class="form-group"><label>Precio costo</label><input id="np-pcosto" type="number" placeholder="20000"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Stock inicial</label><input id="np-stock" type="number" placeholder="0"/></div>
+        <div class="form-group"><label>Stock mínimo</label><input id="np-stockmin" type="number" placeholder="5"/></div>
+      </div>
+      <div class="form-group"><label>Categoría</label>
+        <select id="np-cat">
+          <option value="">Sin categoría</option>
+          ${state.categorias.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')}
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="state.modalNuevoProducto=false;state.error=null;render()">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarNuevoProducto()">Guardar producto</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderModalProducto() {
+  const p = state.productos.find(x => x.id === state.modalProducto);
+  if (!p) return '';
+  const cat = state.categorias.find(c => c.id === p.categoria_id);
+  return `<div class="modal-overlay" onclick="if(event.target===this){state.modalProducto=null;render()}">
+    <div class="modal">
+      <div class="modal-title">Editar producto</div>
+      ${state.error ? `<div class="alert alert-error">${state.error}</div>` : ''}
+      <div class="form-group"><label>Nombre</label><input id="ep-nombre" value="${p.nombre}"/></div>
+      <div class="form-row">
+        <div class="form-group"><label>Precio venta</label><input id="ep-pventa" type="number" value="${p.precio_venta}"/></div>
+        <div class="form-group"><label>Precio costo</label><input id="ep-pcosto" type="number" value="${p.precio_costo}"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Stock</label><input id="ep-stock" type="number" value="${p.stock}"/></div>
+        <div class="form-group"><label>Stock mínimo</label><input id="ep-stockmin" type="number" value="${p.stock_minimo}"/></div>
+      </div>
+      <div class="form-group"><label>Categoría</label>
+        <select id="ep-cat">
+          <option value="">Sin categoría</option>
+          ${state.categorias.map(c => `<option value="${c.id}" ${c.id === p.categoria_id ? 'selected' : ''}>${c.nombre}</option>`).join('')}
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${p.id})">Eliminar</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-ghost" onclick="state.modalProducto=null;state.error=null;render()">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarProducto(${p.id})">Guardar cambios</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function guardarNuevoProducto() {
+  const data = {
+    nombre: document.getElementById('np-nombre').value.trim(),
+    precio_venta: parseFloat(document.getElementById('np-pventa').value) || 0,
+    precio_costo: parseFloat(document.getElementById('np-pcosto').value) || 0,
+    stock: parseInt(document.getElementById('np-stock').value) || 0,
+    stock_minimo: parseInt(document.getElementById('np-stockmin').value) || 5,
+    categoria_id: parseInt(document.getElementById('np-cat').value) || null,
+  };
+  if (!data.nombre || !data.precio_venta) { state.error = 'Nombre y precio son obligatorios'; render(); return; }
+  try {
+    await api('/productos/', { method: 'POST', body: JSON.stringify(data) });
+    state.modalNuevoProducto = false; state.error = null;
+    await loadProductos(); render();
+  } catch(e) { state.error = e.message; render(); }
+}
+
+async function guardarProducto(id) {
+  const data = {
+    nombre: document.getElementById('ep-nombre').value.trim(),
+    precio_venta: parseFloat(document.getElementById('ep-pventa').value),
+    precio_costo: parseFloat(document.getElementById('ep-pcosto').value),
+    stock: parseInt(document.getElementById('ep-stock').value),
+    stock_minimo: parseInt(document.getElementById('ep-stockmin').value),
+    categoria_id: parseInt(document.getElementById('ep-cat').value) || null,
+  };
+  try {
+    await api(`/productos/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    state.modalProducto = null; state.error = null;
+    await loadProductos(); render();
+  } catch(e) { state.error = e.message; render(); }
+}
+
+async function eliminarProducto(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  try {
+    await api(`/productos/${id}`, { method: 'DELETE' });
+    state.modalProducto = null; await loadProductos(); render();
+  } catch(e) { state.error = e.message; render(); }
+}
+
+// ============================================================
+// VENTAS
+// ============================================================
+async function renderVentas(content, actions) {
+  content.innerHTML = '<div style="color:var(--text3);padding:20px">Cargando...</div>';
+  try {
+    const ventas = await api('/ventas/');
+    content.innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Fecha y hora</th><th>Cajero</th><th>Método pago</th><th class="text-right">Total</th><th>Detalles</th></tr></thead>
+          <tbody>
+            ${ventas.length === 0 ? '<tr><td colspan="6" style="color:var(--text3);text-align:center;padding:30px">Sin ventas registradas</td></tr>' :
+              ventas.map(v => {
+                const fecha = new Date(v.created_at);
+                return `<tr>
+                  <td class="mono">#${v.id}</td>
+                  <td>${fecha.toLocaleDateString('es-CO')} ${fecha.toLocaleTimeString('es-CO', {hour:'2-digit',minute:'2-digit'})}</td>
+                  <td>Cajero #${v.cajero_id}</td>
+                  <td><span class="badge badge-blue">${v.metodo_pago}</span></td>
+                  <td class="text-right mono" style="color:var(--accent);font-weight:600">${fmt(v.total)}</td>
+                  <td style="font-size:12px;color:var(--text3)">${v.detalles.length} producto(s)</td>
+                </tr>`;
+              }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  } catch(e) {
+    content.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+// ============================================================
+// USUARIOS
+// ============================================================
+async function renderUsuarios(content, actions) {
+  actions.innerHTML = `<button class="btn btn-primary" onclick="state.modalNuevoUsuario=true;render()">+ Nuevo usuario</button>`;
+  try {
+    const usuarios = await api('/usuarios/');
+    content.innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+          <tbody>
+            ${usuarios.map(u => `<tr>
+              <td style="font-weight:500;color:var(--text)">${u.nombre}</td>
+              <td style="color:var(--text2)">${u.email}</td>
+              <td>${u.rol === 'admin' ? '<span class="badge badge-amber">Admin</span>' : '<span class="badge badge-blue">Cajero</span>'}</td>
+              <td>${u.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="toggleUsuario(${u.id}, ${u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  } catch(e) {
+    content.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+function renderModalNuevoUsuario() {
+  return `<div class="modal-overlay" onclick="if(event.target===this){state.modalNuevoUsuario=false;render()}">
+    <div class="modal">
+      <div class="modal-title">Nuevo usuario</div>
+      ${state.error ? `<div class="alert alert-error">${state.error}</div>` : ''}
+      <div class="form-group"><label>Nombre completo</label><input id="nu-nombre" placeholder="Nombre del usuario"/></div>
+      <div class="form-group"><label>Email</label><input id="nu-email" type="email" placeholder="usuario@licoreria.com"/></div>
+      <div class="form-group"><label>Contraseña</label><input id="nu-pass" type="password" placeholder="Mínimo 6 caracteres"/></div>
+      <div class="form-group"><label>Rol</label>
+        <select id="nu-rol"><option value="cajero">Cajero</option><option value="admin">Administrador</option></select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="state.modalNuevoUsuario=false;state.error=null;render()">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarNuevoUsuario()">Crear usuario</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function guardarNuevoUsuario() {
+  const data = {
+    nombre: document.getElementById('nu-nombre').value.trim(),
+    email: document.getElementById('nu-email').value.trim(),
+    password: document.getElementById('nu-pass').value,
+    rol: document.getElementById('nu-rol').value,
+  };
+  if (!data.nombre || !data.email || !data.password) { state.error = 'Todos los campos son obligatorios'; render(); return; }
+  try {
+    await api('/usuarios/', { method: 'POST', body: JSON.stringify(data) });
+    state.modalNuevoUsuario = false; state.error = null;
+    renderPage();
+  } catch(e) { state.error = e.message; render(); }
+}
+
+async function toggleUsuario(id, activo) {
+  try {
+    await api(`/usuarios/${id}`, { method: 'PUT', body: JSON.stringify({ activo: !activo }) });
+    renderPage();
+  } catch(e) { alert(e.message); }
+}
+
+// ============================================================
+// AUTH & NAVEGACIÓN
+// ============================================================
+async function doLogin() {
+  const email = document.getElementById('l-email').value;
+  const password = document.getElementById('l-pass').value;
+  try {
+    state.error = null;
+    const res = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    state.token = res.access_token;
+    state.user = res.usuario;
+    state.page = state.user.rol === 'admin' ? 'dashboard' : 'pos';
+    await loadInitialData();
+    render();
+  } catch(e) {
+    state.error = e.message;
+    render();
+  }
+}
+
+function doLogout() {
+  state.user = null; state.token = null; state.carrito = [];
+  state.page = 'login'; state.error = null; render();
+}
+
+function goTo(page) {
+  state.page = page; state.busqueda = ''; state.error = null; render();
+}
+
+async function loadProductos() {
+  state.productos = await api('/productos/');
+}
+
+async function loadInitialData() {
+  const [prods, cats] = await Promise.all([api('/productos/'), api('/categorias/')]);
+  state.productos = prods;
+  state.categorias = cats;
+}
+
+function bindLogin() {
+  document.querySelectorAll('input').forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+}
+
+function bindLayout() {}
+
+function mostrarError(msg) {
+  state.error = msg; renderPage();
+  setTimeout(() => { state.error = null; renderPage(); }, 2500);
+}
+
+// ============================================================
+// INICIO
+// ============================================================
+render();
+</script>
+</body>
+</html>
