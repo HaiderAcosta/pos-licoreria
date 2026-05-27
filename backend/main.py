@@ -13,10 +13,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-    "https://pos-licoreria-frontend.onrender.com"
-],
-allow_credentials=False,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
